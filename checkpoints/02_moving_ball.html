@@ -1,0 +1,82 @@
+<html>
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+      <title>MultiPong</title>
+      <script src="https://unpkg.com/@croquet/croquet@2.0.0-42"></script>
+      <style>
+html, body {
+  margin: 0;
+  height: 100%;
+  background: #999;
+}
+#canvas {
+  object-fit: contain;
+  max-width: 100%;
+  max-height: 100%;
+  background: #000;
+}
+      </style>
+    </head>
+    <body>
+      <canvas id="canvas" width="1000" height="1000"></canvas>
+    </body>
+    <script>
+const CANVAS_WIDTH = 1000;
+const CANVAS_HEIGHT = 1000;
+const UPDATE_INTERVAL = 50;
+
+class Ball {
+  constructor({
+    x = CANVAS_WIDTH / 2,
+    y = CANVAS_HEIGHT / 2,
+    r = 10,
+    dx = 6,
+    dy = 8
+  } = {}) {
+    this.x = x;
+    this.y = y;
+    this.r = r;
+    this.dx = dx;
+    this.dy = dy;
+
+    this.update();
+  }
+
+  update() {
+    this.x += this.dx;
+    this.y += this.dy;
+
+    setTimeout(() => this.update(), UPDATE_INTERVAL);
+  }
+}
+
+ctx = canvas.getContext("2d");
+
+const ball = new Ball()
+
+function drawBall(ball) {
+  if (!ball) return;
+
+  ctx.beginPath();
+  ctx.arc(ball.x, ball.y, ball.r, 0, Math.PI * 2);
+  ctx.fillStyle = "white";
+  ctx.fill();
+  ctx.stroke();
+}
+
+function renderLoop() {
+  // Clear the canvas
+  ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+  ctx.lineWidth = 3;
+  ctx.strokeStyle = "white";
+
+  // Draw our contents
+  drawBall(ball);
+
+  requestAnimationFrame(renderLoop);
+}
+
+renderLoop();
+    </script>
+</html>

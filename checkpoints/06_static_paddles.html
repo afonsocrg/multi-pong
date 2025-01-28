@@ -1,0 +1,198 @@
+<html>
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+      <title>MultiPong</title>
+      <script src="https://unpkg.com/@croquet/croquet@2.0.0-42"></script>
+      <style>
+html, body {
+  margin: 0;
+  height: 100%;
+  background: #999;
+}
+#canvas {
+  object-fit: contain;
+  max-width: 100%;
+  max-height: 100%;
+  background: #000;
+}
+      </style>
+    </head>
+    <body>
+      <canvas id="canvas" width="1000" height="1000"></canvas>
+    </body>
+    <script>
+const CANVAS_WIDTH = 1000;
+const CANVAS_HEIGHT = 1000;
+const UPDATE_INTERVAL = 50;
+const BALL_SPEED = 15;
+
+class Ball extends Croquet.Model {
+  init({
+    x = CANVAS_WIDTH / 2,
+    y = CANVAS_HEIGHT / 2,
+    r = 10,
+    dx = 6,
+    dy = 8
+  } = {}) {
+    super.init();
+
+    this.x = x;
+    this.y = y;
+    this.r = r;
+    this.dx = dx;
+    this.dy = dy;
+  }
+
+  update() {
+    this.x += this.dx;
+    this.y += this.dy;
+
+    // Making sure we only reverse the direction if
+    // we are actually moving towards the wall.
+    // This avoids the ball getting "stuck" bouncing back and forth
+    if (
+      this.dx > 0 ?
+      (this.x > CANVAS_WIDTH - this.r) :  
+      (this.x < this.r)
+    ) {
+      this.dx = -this.dx;
+    }
+
+    if (
+      this.dy > 0 ?
+      (this.y > CANVAS_HEIGHT - this.r) :
+      (this.y < this.r)
+    ) {
+      this.dy = -this.dy;
+    }
+  }
+}
+Ball.register("Ball");
+
+class Paddle extends Croquet.Model {
+  init({ x, y, viewId }) {
+    super.init();
+
+    this.viewId = viewId;
+
+    this.x = x;
+    this.y = y;
+
+    this.dy = 0;
+
+    this.w = 20;
+    this.h = 100;
+  }
+}
+Paddle.register("Paddle");
+
+class Pong extends Croquet.Model {
+  init() {
+    super.init();
+
+    const speedAngle = Math.random() * Math.PI * 2;
+    this.ball = Ball.create({
+      x: CANVAS_WIDTH / 2,
+      y: CANVAS_HEIGHT / 2,
+      dx: BALL_SPEED * Math.cos(speedAngle),
+      dy: BALL_SPEED * Math.sin(speedAngle),
+    });
+
+    this.leftPaddle = null;
+    this.rightPaddle = null;
+
+    this.subscribe(this.sessionId, "view-join", this.viewJoined);
+    this.subscribe(this.sessionId, "view-exit", this.viewExited);
+
+    this.mainLoop();
+  }
+
+  viewJoined(viewId) {
+    // If we already have two paddles, do nothing
+    if (this.leftPaddle !== null && this.rightPaddle !== null) {
+      console.log("Game is full!");
+      return;
+    }
+
+    // Otherwise, create first the left, then the right paddle
+    const isLeft = this.leftPaddle === null;
+    const x = isLeft ? 100 : CANVAS_WIDTH - 100;
+    const y = CANVAS_HEIGHT / 2;
+    const paddle = Paddle.create({
+      x,
+      y,
+      viewId,
+    });
+
+    if (isLeft) {
+      this.leftPaddle = paddle;
+    } else {
+      this.rightPaddle = paddle;
+    }
+  }
+
+  viewExited(viewId) {
+    if (this.leftPaddle?.viewId === viewId) {
+      this.leftPaddle.destroy();
+      this.leftPaddle = null;
+    } else if (this.rightPaddle?.viewId === viewId) {
+      this.rightPaddle.destroy();
+      this.rightPaddle = null;
+    }
+  }
+
+  mainLoop() {
+    this.ball?.update();
+    this.future(UPDATE_INTERVAL).mainLoop();
+  }
+}
+Pong.register("Pong");
+
+class Display extends Croquet.View {
+  constructor(model) {
+    super(model);
+    this.model = model;
+    this.ctx = canvas.getContext("2d");
+  }
+
+  drawBall(ball) {
+    if (!ball) return;
+
+    this.ctx.beginPath();
+    this.ctx.arc(ball.x, ball.y, ball.r, 0, Math.PI * 2);
+    this.ctx.fillStyle = "white";
+    this.ctx.fill();
+    this.ctx.stroke();
+  }
+
+  drawPaddle(paddle) {
+    if(!paddle) return;
+
+    const { x, y, w, h } = paddle;
+    this.ctx.fillStyle = "white";
+    this.ctx.fillRect(x - w / 2, y - h / 2, w, h);
+  }
+
+  update() {
+    this.ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+    this.ctx.lineWidth = 3;
+    this.ctx.strokeStyle = "white";
+
+    this.drawBall(this.model.ball);
+    this.drawPaddle(this.model.leftPaddle);
+    this.drawPaddle(this.model.rightPaddle);
+  }
+}
+
+Croquet.Session.join({
+  apiKey: "1ux7jPG5ramflgqg2G6ygpbe6CGjh3Bc0OEg9Nx0O",
+  appId: "io.multisynq.pong.afonsocrg",
+  name: Croquet.App.autoSession(),
+  password: Croquet.App.autoPassword(),
+  model: Pong,
+  view: Display,
+});
+
+    </script>
+</html>
