@@ -15,13 +15,13 @@ This tutorial will guide you through building a real-time multiplayer Pong game 
 
 This tutorial is divided into 4 steps:
 
-1. **Creating a Single Player Bouncing Ball** (10 min)
+1. **Creating a Single Player Bouncing Ball** (5 min)
 2. **Synchronizing the Ball** (10 min)
-3. **Adding Player Paddles** (10 min)
+3. **Adding Player Paddles** (15 min)
 4. **Implementing scoring system** (10 min)
 
 <!-- [View Final Demo](link_to_demo) | [Final Source Code](link_to_code) -->
-[Final Source Code](TODO)
+[Final Source Code](./checkpoints/10_tutorial_final_code.html)
 
 
 
