@@ -8,7 +8,7 @@ This tutorial will guide you through building a real-time multiplayer Pong game 
 - **Prerequisites**:
   - Basic JavaScript knowledge
   - A code editor
-  - A modern web browser
+  - A web browser
 
 
 ## Overview
@@ -399,7 +399,7 @@ class Display extends Croquet.View {
   // to override the Croquet.View.update() method
   update() {
     // Clear the canvas
-    this.ctx.clearRect(0, 0, 1000, 1000);
+    this.ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
     this.ctx.lineWidth = 3;
     this.ctx.strokeStyle = "white";
 
